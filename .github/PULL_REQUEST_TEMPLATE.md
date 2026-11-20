@@ -19,5 +19,5 @@
 ## Checklist:
 - [ ] My change requires a change to the documentation.
 - [ ] I have updated the documentation accordingly.
-- [ ] I've read the [CONTRIBUTION](https://github.com/swade1987/flux2-kustomize-template/blob/main/CONTRIBUTING.md) guide
+- [ ] I've read the [CONTRIBUTION](../CONTRIBUTING.md) guide
 - [ ] I have signed-off my commits with `git commit -s`

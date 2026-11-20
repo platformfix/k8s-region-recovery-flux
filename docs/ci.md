@@ -41,15 +41,6 @@ The script used to validate this, can be found [here](../bin/pluto-checks.sh).
 
 This script is executed within our `kubernetes-toolkit` container which can be found [here](https://github.com/swade1987/kubernetes-toolkit).
 
-## istio-checks
-
-We validate the resources within each sub-directory under the `environments` directory against the JSON schema definitions for the version of Istio we are using.
-
-This is made possible by leveraging a tool called `istioctl` which can be found [here](https://istio.io/latest/docs/reference/commands/istioctl/).
-
-The script used to validate this, can be found [here](../bin/istio-checks.sh).
-
-This script is executed within our `kubernetes-toolkit` container which can be found [here](https://github.com/swade1987/kubernetes-toolkit).
 
 ## kustomize-yaml-check
 

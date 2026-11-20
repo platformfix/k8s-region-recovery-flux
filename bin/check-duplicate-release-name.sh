@@ -7,7 +7,7 @@ set -euo pipefail
 EXIT_CODE=0
 
 function get_targets {
-  find . -maxdepth 3 -name kustomization.yaml -exec dirname {} \;
+  find kustomize -maxdepth 3 -name kustomization.yaml -exec dirname {} \;
 }
 
 for env in $(get_targets); do
@@ -16,17 +16,17 @@ for env in $(get_targets); do
   	cd "${env}" ; \
     kustomize build . | \
     yq e --no-doc --unwrapScalar=false '.spec.releaseName' - | \
-    grep -v null | \
+    { grep -v null || true; } | \
     sed 's/^-\ //g' | \
     sort | \
     uniq -d
   )
 
-  if [[ $(wc -w <<< "$dupes") == 0 ]]; then
+  if [[ -z "$dupes" ]]; then
     echo "OK"
   else
     echo "  Duplicates found:"
-    printf "    %s" "$dupes"
+    printf "    %s\n" "$dupes"
     EXIT_CODE=1
   fi
 done
