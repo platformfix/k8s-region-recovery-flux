@@ -45,11 +45,12 @@ kustomize
 How Flux reaches this repository
 --------------------------------
 
-The repository is private. Each cluster's Flux reads it over SSH with a
-read-only deploy key. The key is created by Terraform in the infra repo's
-shared stack; its private half stays in Terraform's state and in the cluster,
-and nothing secret is stored here. The infra repo's `docs/flux-repo.md`
-explains how the key is registered and rotated.
+The repository is public, and each cluster's Flux reads it anonymously over
+HTTPS, with no credential. Nothing in it is secret: it holds only the app's
+manifests and Helm values. A read-only deploy key was the first plan, but the
+Platform Fix GitHub organisation disables deploy keys for its repositories. If
+the repository moves to an account where it is private, Flux will need a
+credential again; the infra repo's `docs/flux-repo.md` covers that cutover.
 
 Credit
 ------
