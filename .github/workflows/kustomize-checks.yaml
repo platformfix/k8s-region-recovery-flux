@@ -46,16 +46,6 @@ jobs:
       - name: pluto-checks
         run: make pluto-checks
 
-  istio-checks:
-    permissions:
-      contents: read
-    runs-on: ubuntu-latest
-    container: eu.gcr.io/swade1987/kubernetes-toolkit:1.56.0
-    steps:
-      - name: clone repo
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: istioctl-checks
-        run: make istio-checks
 
   kustomize-yaml-check:
     permissions:
@@ -85,7 +75,7 @@ jobs:
         uses: swade1987/github-action-kustomize-diff@f584de42c1bc9dccb7a0f021263c6acb73e6c770 # v0.7.0
         with:
           root_dir: "./kustomize"
-          max_depth: "2"
+          max_depth: "3"
       - id: comment
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:

@@ -1,0 +1,17 @@
+# Where the k8coins Helm chart comes from: its published OCI package
+# (https://github.com/platformfix/k8coins). Pinned to 0.7.0, the version the
+# Terraform-installed app of V1 uses (stacks/region/k8coins.tf in
+# 0Aleksander/k8s-region-recovery-infra), so V1 and V2 run the same app.
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: k8coins
+  namespace: k8coins
+spec:
+  interval: 10m
+  url: oci://ghcr.io/platformfix/k8coins
+  ref:
+    tag: 0.7.0
+  layerSelector:
+    mediaType: application/vnd.cncf.helm.chart.content.v1.tar+gzip
+    operation: copy

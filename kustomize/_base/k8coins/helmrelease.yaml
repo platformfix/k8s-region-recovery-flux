@@ -1,0 +1,34 @@
+# The k8coins app. Its values are the same, value for value, as the
+# Terraform release V1 installs (stacks/region/k8coins.tf in
+# 0Aleksander/k8s-region-recovery-infra), so the only difference between V1
+# and V2 is which tool installs the app. The reasons for each value (Redis as
+# a StatefulSet with a disk, and its raised CPU and memory for the seeded
+# million-coin wallet) are written there.
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: k8coins
+  namespace: k8coins
+spec:
+  releaseName: k8coins
+  interval: 10m
+  timeout: 10m
+  chartRef:
+    kind: OCIRepository
+    name: k8coins
+  values:
+    redis:
+      kind: StatefulSet
+      persistence:
+        enabled: true
+      resources:
+        requests:
+          cpu: 500m
+          memory: 512Mi
+        limits:
+          cpu: "1"
+          memory: 1Gi
+    ingress:
+      enabled: true
+      className: traefik
+      host: k8coins-dr.platformfix.com

@@ -1,59 +1,86 @@
-[![kustomize-checks](https://github.com/swade1987/flux2-kustomize-template/actions/workflows/kustomize-checks.yaml/badge.svg)](https://github.com/swade1987/flux2-kustomize-template/actions/workflows/kustomize-checks.yaml)
+[![kustomize-checks](https://github.com/platformfix/k8s-region-recovery-flux/actions/workflows/kustomize-checks.yaml/badge.svg)](https://github.com/platformfix/k8s-region-recovery-flux/actions/workflows/kustomize-checks.yaml)
 
-# Flux Kustomize Template
+k8s-region-recovery-flux
+========================
 
-This is an opinionated Kustomize template to use as a starting point for new projects.
+The Git repository Flux reads in version V2 of Aleksander Laketa's diploma on
+recovering Kubernetes after losing a whole cloud region. The infrastructure,
+the runbooks, the timed runs and their results live in
+[0Aleksander/k8s-region-recovery-infra](https://github.com/0Aleksander/k8s-region-recovery-infra);
+this repository holds only what Flux installs from Git: the demo app k8coins.
 
-## Features
+The diploma defines four versions of the recovery. V1 rebuilds the platform
+with Terraform. V2 is V1 with one change: Flux, not Terraform, installs the app,
+from this repository. Terraform still builds the cluster, the ingress
+controller, Velero (the backup tool) and Flux itself, which it installs with the
+Flux Operator and points at the directory `kustomize/k8srr`.
 
-- Linting (via CI) using [kubeconform](https://github.com/yannh/kubeconform), [pluto](https://github.com/FairwindsOps/pluto) and [istioctl](https://istio.io/latest/docs/reference/commands/istioctl/).
-    - Automated with GitHub Actions
-- Commits must meet [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/)
-    - Automated with GitHub Actions ([commit-lint](https://github.com/conventional-changelog/commitlint/#what-is-commitlint))
-- Pull Request titles must meet [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/)
-    - Automated with GitHub Actions ([pr-lint](https://github.com/amannn/action-semantic-pull-request))
-- Commits must be signed with [Developer Certificate of Origin (DCO)](https://developercertificate.org/)
-    - Automated with GitHub App ([DCO](https://github.com/apps/dco))
+This repository lives in Platform Fix's GitHub organisation for now and is due
+to move to Aleks's account. The infra repo keeps its address in one place
+(`docs/flux-repo.md` there), so the move changes one line.
 
-## Directory Structure
+What is here
+------------
 
 ```
 kustomize
-├── _base                               # Base Kustomize resources (non-cluster specific)
-├── us-west-2-platform-engineering-prd  # Kustomize overlays for specific cluster (prd)
-└── us-west-2-platform-engineering-sbx  # Kustomize overlays for specific cluster (sbx)
+├── k8srr            # the directory both regions' Flux syncs: one Flux Kustomization, k8coins
+└── _base
+    └── k8coins      # the app: its namespace, where its Helm chart comes from, and its HelmRelease
 ```
 
-## Getting started
+- `kustomize/k8srr/k8coins.yaml` is the Flux Kustomization that installs the
+  app. It starts **suspended**, in both regions. In the recovery region the
+  Redis data has to be restored from the Velero backup before Redis exists,
+  because Velero never overwrites an object that is already there; the V2
+  runbook restores the disk and then runs `flux resume kustomization k8coins
+  -n flux-system`. The file's comment explains this in full, including why
+  the annotation `kustomize.toolkit.fluxcd.io/ssa: IfNotPresent` stops Flux
+  from suspending it again.
+- `kustomize/_base/k8coins/helmrelease.yaml` has the same chart version and
+  the same values as the Terraform release in V1
+  (`stacks/region/k8coins.tf` in the infra repo), so V1 and V2 run the same
+  app and differ only in which tool installs it.
 
-Before working with the repository it is **mandatory** to execute the following command:
+How Flux reaches this repository
+--------------------------------
+
+The repository is private. Each cluster's Flux reads it over SSH with a
+read-only deploy key. The key is created by Terraform in the infra repo's
+shared stack; its private half stays in Terraform's state and in the cluster,
+and nothing secret is stored here. The infra repo's `docs/flux-repo.md`
+explains how the key is registered and rotated.
+
+Credit
+------
+
+Started from Steve Wade's
+[swade1987/flux2-kustomize-template](https://github.com/swade1987/flux2-kustomize-template):
+the `kustomize/_base` layout, the CI checks and the contribution rules. Its
+example apps, its Istio check, its release workflow and its Scorecard workflow
+were removed because this repository has no use for them.
+
+Working on it
+-------------
+
+Install the pre-commit hooks once:
 
 ```
 make initialise
 ```
 
-The above command will install the `pre-commit` package and setup pre-commit checks for this repository including [conventional-pre-commit](https://github.com/compilerla/conventional-pre-commit) to make sure your commits match the conventional commit convention.
+Commits and pull request titles follow
+[Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/), and
+every commit is signed off (`git commit -s`,
+[Developer Certificate of Origin](https://developercertificate.org/)). CI
+builds every directory under `kustomize/` and validates it with kubeconform and
+pluto ([docs/ci.md](docs/ci.md)). To run the checks locally:
 
-## Contributing to the repository
-
-To contribute, please read the [contribution guidelines](CONTRIBUTING.md). You may also [report an issue](https://github.com/swade1987/flux2-kustomize-template/issues/new/choose).
-
-## How does this repository work?
-
-This repo is driven by [Flux](https://fluxcd.io/).
-
-## Continuous Integration
-
-For more information on how CI for this repo works, please see [here](docs/ci.md)
-
-## Local CI
-
-To run the CI checks locally, you can use the following command:
-
-```bash
+```
 make local-check-duplicate-release-name
 make local-kubeconform-checks
 make local-pluto-checks
-make local-istio-checks
 make local-kustomization-yaml-fix
 ```
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the contribution rules.

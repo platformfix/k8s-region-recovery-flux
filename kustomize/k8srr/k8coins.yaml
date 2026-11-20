@@ -1,0 +1,39 @@
+# The Flux Kustomization that installs k8coins from kustomize/_base/k8coins.
+#
+# Both regions, London (LON1) and Frankfurt (FRA1), sync this same directory,
+# so Flux builds the same app in either. The only thing that differs is WHEN
+# the app is installed, and that is why this object starts suspended:
+#
+#   - Frankfurt is a recovery region. Its Redis data has to come back from
+#     London's Velero backup BEFORE Redis exists. If Flux installed the app at
+#     once, the Redis StatefulSet would create a new, empty disk, and Velero
+#     never overwrites an object that already exists: the restore would report
+#     success and the wallet would stay empty. So the V2 runbook restores
+#     Redis's disk first and only then runs
+#       flux resume kustomization k8coins -n flux-system
+#     (docs/runbook-v2-restore.md in 0Aleksander/k8s-region-recovery-infra).
+#   - London has no data to restore, so `make run VERSION=V2` resumes it as
+#     soon as London is built.
+#
+# The annotation kustomize.toolkit.fluxcd.io/ssa: IfNotPresent tells Flux to
+# create this object once and then leave it alone. Without it, Flux would put
+# `suspend: true` back on its next pass over this repository and stop
+# reconciling the app again after the operator resumed it.
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: k8coins
+  namespace: flux-system
+  annotations:
+    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
+spec:
+  suspend: true
+  interval: 10m
+  path: ./kustomize/_base/k8coins
+  prune: true
+  # Ready only once the HelmRelease, and so every pod of the app, is ready.
+  wait: true
+  timeout: 10m
+  sourceRef:
+    kind: GitRepository
+    name: flux-system

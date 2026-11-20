@@ -33,10 +33,6 @@ local-pluto-checks:
 	clear
 	docker run --rm --platform $(BUILDPLATFORM) --name pluto -v $(CURRENT_WORKING_DIR)/kustomize:/kustomize $(TOOLKIT_IMAGE) bash -c "`cat bin/pluto-checks.sh`"
 
-local-istio-checks:
-	clear
-	docker run --rm --platform $(BUILDPLATFORM) --name istio-checks -v $(CURRENT_WORKING_DIR)/kustomize:/kustomize $(TOOLKIT_IMAGE) bash -c "`cat bin/istio-checks.sh`"
-
 local-kustomization-yaml-fix:
 	clear
 	docker run --rm --platform $(BUILDPLATFORM) --name kustomization-yaml-fix -v $(CURRENT_WORKING_DIR)/kustomize:/kustomize $(TOOLKIT_IMAGE) kustomization-yaml-fix /kustomize
@@ -64,6 +60,3 @@ kubeconform-checks:
 
 pluto-checks:
 	./bin/pluto-checks.sh
-
-istio-checks:
-	./bin/istio-checks.sh

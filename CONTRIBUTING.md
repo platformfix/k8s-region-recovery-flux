@@ -1,6 +1,6 @@
 # Contributing
 
-The repository is [MIT licensed](https://github.com/swade1987/flux2-kustomize-template/blob/main/LICENSE) and
+The repository is [MIT licensed](LICENSE) and
 accepts contributions via GitHub pull requests. This document outlines
 some of the conventions on to make it easier to get your contribution
 accepted.
@@ -47,7 +47,7 @@ All commits and PR titles must follow this format:
 type(optional scope): description
 
 Examples:
-- `feat: add new istio validation check`
+- `feat: add a validation check`
 - `fix(ci): resolve kubeconform pipeline error`
 - `docs: update deployment instructions`
 - `chore: bump pre-commit hooks version`
