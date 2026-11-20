@@ -1,0 +1,108 @@
+name: kustomize-checks
+
+on:
+  pull_request:
+
+# Safe floor for any job that doesn't declare its own permissions; every
+# job below already declares its own anyway.
+permissions:
+  contents: read
+
+jobs:
+
+  duplicate-release-name-checks:
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    container: eu.gcr.io/swade1987/kubernetes-toolkit:1.56.0
+    steps:
+      - name: clone repo
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: duplicate-helmrelease-name-check
+        run: make duplicate-release-name-check
+
+  kubeconform:
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    container: eu.gcr.io/swade1987/kubernetes-toolkit:1.56.0
+    steps:
+      - name: clone repo
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - name: kubeconform-checks
+        run: make kubeconform-checks
+
+  pluto:
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    container: eu.gcr.io/swade1987/kubernetes-toolkit:1.56.0
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - name: pluto-checks
+        run: make pluto-checks
+
+  istio-checks:
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    container: eu.gcr.io/swade1987/kubernetes-toolkit:1.56.0
+    steps:
+      - name: clone repo
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: istioctl-checks
+        run: make istio-checks
+
+  kustomize-yaml-check:
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    container: eu.gcr.io/swade1987/kubernetes-toolkit:1.56.0
+    steps:
+      - name: clone repo
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Git Safe Directory
+        run: git config --global --add safe.directory '*'
+      - name: kustomize lint
+        run: kustomization-yaml-fix kustomize
+      - name: test git is clean
+        run: test "$(git status --porcelain | wc -l)" = "0"
+
+  kustomize-diff:
+    permissions:
+      pull-requests: write
+      contents: read
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - id: kustomize-diff
+        uses: swade1987/github-action-kustomize-diff@f584de42c1bc9dccb7a0f021263c6acb73e6c770 # v0.7.0
+        with:
+          root_dir: "./kustomize"
+          max_depth: "2"
+      - id: comment
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          OUTPUT: ${{ steps.kustomize-diff.outputs.diff }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const rawOutput = process.env.OUTPUT;
+            const noDiffMessage = "No differences found between";
+
+            const formattedOutput = rawOutput.includes(noDiffMessage)
+              ? `### ${rawOutput}`
+              : `### Kustomize Changes\n<details><summary>Show Diff</summary>\n\n\`\`\`diff\n${rawOutput}\n\`\`\`\n</details>`;
+
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: formattedOutput
+            })
