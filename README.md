@@ -10,7 +10,8 @@ the runbooks, the timed runs and their results live in
 this repository holds only what Flux installs from Git: the demo app k8coins.
 
 The diploma defines four versions of the recovery, each adding one thing to the
-one before. V0 is done by hand. V1 rebuilds the platform with Terraform. V2 is
+one before. V0 is done by hand. V1 rebuilds the platform with Terraform and
+restores the data by following a written runbook. V2 is
 V1 with one change: Flux, not Terraform, installs the app, from this
 repository. V3 is V2 with one change: one script restores the data instead of
 a runbook. In V2 and V3, Terraform still builds the cluster, the ingress
@@ -41,8 +42,9 @@ kustomize
   same steps. The file's comment explains the V2 case in full, including why
   the annotation `kustomize.toolkit.fluxcd.io/ssa: IfNotPresent` stops Flux
   from suspending it again.
-- `kustomize/_base/k8coins/helmrelease.yaml` has the same chart version and
-  the same values as the Terraform release in V1
+- `kustomize/_base/k8coins/helmrelease.yaml` has the same values as the
+  Terraform release in V1, and `kustomize/_base/k8coins/ocirepository.yaml`
+  pins the same chart version, 0.7.0
   (`stacks/region/k8coins.tf` in the infra repo), so V1, V2 and V3 run the
   same app, whichever tool installs it.
 
