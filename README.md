@@ -44,7 +44,7 @@ kustomize
 - `kustomize/_base/k8coins/helmrelease.yaml` has the same chart version and
   the same values as the Terraform release in V1
   (`stacks/region/k8coins.tf` in the infra repo), so V1, V2 and V3 run the
-  same app; V1 differs from the other two only in which tool installs it.
+  same app, whichever tool installs it.
 
 How Flux reaches this repository
 --------------------------------
