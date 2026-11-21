@@ -12,8 +12,8 @@ this repository holds only what Flux installs from Git: the demo app k8coins.
 The diploma defines four versions of the recovery, each adding one thing to the
 one before. V0 is done by hand. V1 rebuilds the platform with Terraform and
 restores the data by following a written runbook. V2 is
-V1 with one change: Flux, not Terraform, installs the app, from this
-repository. V3 is V2 with one change: one script restores the data instead of
+V1 with one change: Flux installs the app, from this repository, instead of
+Terraform (in the source region) and the restore (in the recovery region). V3 is V2 with one change: one script restores the data instead of
 a runbook. In V2 and V3, Terraform still builds the cluster, the ingress
 controller, Velero (the backup tool) and Flux itself, which it installs with the
 Flux Operator and points at the directory `kustomize/k8srr`.
