@@ -43,10 +43,11 @@ kustomize
   the annotation `kustomize.toolkit.fluxcd.io/ssa: IfNotPresent` stops Flux
   from suspending it again.
 - `kustomize/_base/k8coins/helmrelease.yaml` has the same values as the
-  Terraform release in V1, and `kustomize/_base/k8coins/ocirepository.yaml`
-  pins the same chart version, 0.7.0
-  (`stacks/region/k8coins.tf` in the infra repo), so V1, V2 and V3 run the
-  same app, whichever tool installs it.
+  Terraform release in the infra repo (`stacks/region/k8coins.tf`), and
+  `kustomize/_base/k8coins/ocirepository.yaml` pins the same chart version,
+  0.7.0 (the default of `k8coins_chart_version` in the infra repo's
+  `stacks/region/variables.tf`), so V1, V2 and V3 run the same app, whichever
+  tool installs it.
 
 How Flux reaches this repository
 --------------------------------
