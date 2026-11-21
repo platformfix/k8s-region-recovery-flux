@@ -3,21 +3,24 @@
 k8s-region-recovery-flux
 ========================
 
-The Git repository Flux reads in version V2 of Aleksander Laketa's diploma on
-recovering Kubernetes after losing a whole cloud region. The infrastructure,
+The Git repository Flux reads in versions V2 and V3 of Aleksander Laketa's
+diploma on recovering Kubernetes after losing a whole cloud region. The infrastructure,
 the runbooks, the timed runs and their results live in
 [0Aleksander/k8s-region-recovery-infra](https://github.com/0Aleksander/k8s-region-recovery-infra);
 this repository holds only what Flux installs from Git: the demo app k8coins.
 
-The diploma defines four versions of the recovery. V1 rebuilds the platform
-with Terraform. V2 is V1 with one change: Flux, not Terraform, installs the app,
-from this repository. Terraform still builds the cluster, the ingress
+The diploma defines four versions of the recovery, each adding one thing to the
+one before. V0 is done by hand. V1 rebuilds the platform with Terraform. V2 is
+V1 with one change: Flux, not Terraform, installs the app, from this
+repository. V3 is V2 with one change: one script restores the data instead of
+a runbook. In V2 and V3, Terraform still builds the cluster, the ingress
 controller, Velero (the backup tool) and Flux itself, which it installs with the
 Flux Operator and points at the directory `kustomize/k8srr`.
 
-This repository lives in Platform Fix's GitHub organisation for now and is due
-to move to Aleks's account. The infra repo keeps its address in one place
-(`docs/flux-repo.md` there), so the move changes one line.
+This repository lives in Platform Fix's GitHub organisation and is due to move
+to Aleks's account. The infra repo sets its address in one variable,
+`flux_git_url` in `stacks/shared/variables.tf`; its `docs/flux-repo.md` lists
+the steps of the move.
 
 What is here
 ------------
@@ -32,15 +35,16 @@ kustomize
 - `kustomize/k8srr/k8coins.yaml` is the Flux Kustomization that installs the
   app. It starts **suspended**, in both regions. In the recovery region the
   Redis data has to be restored from the Velero backup before Redis exists,
-  because Velero never overwrites an object that is already there; the V2
+  because Velero never overwrites an object that is already there. The V2
   runbook restores the disk and then runs `flux resume kustomization k8coins
-  -n flux-system`. The file's comment explains this in full, including why
+  -n flux-system`; in V3, the infra repo's `scripts/restore-data.sh` does the
+  same steps. The file's comment explains this in full, including why
   the annotation `kustomize.toolkit.fluxcd.io/ssa: IfNotPresent` stops Flux
   from suspending it again.
 - `kustomize/_base/k8coins/helmrelease.yaml` has the same chart version and
   the same values as the Terraform release in V1
-  (`stacks/region/k8coins.tf` in the infra repo), so V1 and V2 run the same
-  app and differ only in which tool installs it.
+  (`stacks/region/k8coins.tf` in the infra repo), so V1, V2 and V3 run the
+  same app, whichever tool installs it.
 
 How Flux reaches this repository
 --------------------------------
