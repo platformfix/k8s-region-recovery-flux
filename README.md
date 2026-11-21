@@ -38,7 +38,7 @@ kustomize
   because Velero never overwrites an object that is already there. The V2
   runbook restores the disk and then runs `flux resume kustomization k8coins
   -n flux-system`; in V3, the infra repo's `scripts/restore-data.sh` does the
-  same steps. The file's comment explains this in full, including why
+  same steps. The file's comment explains the V2 case in full, including why
   the annotation `kustomize.toolkit.fluxcd.io/ssa: IfNotPresent` stops Flux
   from suspending it again.
 - `kustomize/_base/k8coins/helmrelease.yaml` has the same chart version and
